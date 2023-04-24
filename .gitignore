@@ -1,32 +1,280 @@
-# Prerequisites
-*.d
+#include <iostream>
+using namespace std; 
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+const int MAXCOLUMN = 10;
+const int MAXROW = 10;
 
-# Precompiled Headers
-*.gch
-*.pch
+enum Direction {LEFT, RIGHT, UP, DOWN};
+enum Level{BEGINNER=4,INTERMEDIATE=7,ADVANCED=10};
+enum Grid{LEFTBAFFLE, RIGHTBAFFLE, EMPTY, LEFTFOUND, RIGHTFOUND};
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+void PrintBoard(Grid board[][MAXCOLUMN], bool); //BOARD DISPLAY
+void PrintScore(int, int);
+void SetBoard(Grid board[][MAXCOLUMN], Level);
+int TrackLaser(Grid board[][MAXCOLUMN], Direction, int, int&, int&, int&, int&);
+bool MakeGuess(Grid board[][MAXCOLUMN], int, int, char, bool, int&, int&, int&);
+void commandLet(char);
+void playGame(char);
 
-# Fortran module files
-*.mod
-*.smod
+//initialize variables
+  Grid board[MAXROW][MAXCOLUMN]; 
+  bool foundOnly = false;
+  int score = 0, shots = 1, numGuess = 1;
+  char command;
+  Level gameLevel;
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+std::istream& operator>>(std::istream& in, Level& level) {
+    int value;
+    in >> value;
+    level = static_cast<Level>(value);
+    return in;
+}
 
-# Executables
-*.exe
-*.out
-*.app
+int main() {
+    srand(time(0));
+switch (gameLevel) {
+        case BEGINNER:
+        case INTERMEDIATE:
+        case ADVANCED:
+          gameLevel = static_cast<Level>(gameLevel);
+        break;
+        default:
+          cout << "Invalid game level. Quitting game." << endl;
+        }
+  
+  //SetBoard(board, gameLevel); //set up board
+  
+  //intro
+  cout << "Welcome to Bella's Baffle!" << endl;
+  cout << "Please enter a level you would like to play:" << endl;
+  cout << "BEGINNER: Enter 4" << endl;
+  cout << "INTERMEDIATE: Enter 7" << endl;
+  cout << "ADVANCED: Enter 10" << endl;
+  cin >> gameLevel;
+    // Set game level based on user input
+    
+   SetBoard(board, gameLevel); //reset board
+   score = 0;
+   numGuess = 0;
+   shots = 0;
+  
+  int exitPoint = TrackLaser(board, dir,guessR, guessC, dir);
+  
+  //play game
+  do{
+    PrintBoard(board, foundOnly);
+    PrintScore(score, numGuess);
+    cout << "Enter Command: (L, G, S, P, Q, or C): " << endl;
+    cin >> command;
+    commandLet(command);
+   // playGame(command);
+  }while (command != 'Q');
+  
+  if (foundOnly == gameLevel) {
+    cout << "You found all the baffles!" << endl;
+  } else { 
+    cout << "You quit the game" << endl;
+  }      
+      PrintBoard(board, foundOnly);
+      score += 50;
+      cout << "Game over. Final score: " << score << endl;
+  return 0;
+}
+void PrintBoard(Grid board[][MAXCOLUMN], bool foundOnly)
+  {
+  cout<<" ";
+  for(int i = 0; i<MAXROW - 1; i++) {
+    cout<<i+10<<" "<<endl;
+
+  }
+  if(foundOnly) {
+    for(int i = 0; i<MAXROW; i++) {
+      cout<<9-i;
+    }
+      for(int j = 0; j<MAXCOLUMN; j++) {
+        if(board[i][j] == EMPTY || board[i][j] == LEFTBAFFLE || board[i][j] == RIGHTBAFFLE) {
+          cout<<"-+-";
+        } else if(board[i][j]==RIGHTFOUND) {
+          cout<<"-/-";
+        } else if(board[i][j]==LEFTFOUND) {
+          cout<<"-\\-";
+        }
+      cout<<10+i<<endl;
+      }
+  }
+     for(int i = 0; i<MAXROW; i++) {
+       cout<<9-i;
+      for(int j = 0; j<MAXCOLUMN; j++) {
+        if(board[i][j] == EMPTY) {
+          cout<<"-+-";
+        } else if(board[i][j]==LEFTFOUND) {
+          cout<<"-\\-";
+        } else if(board[i][j]==RIGHTFOUND) {
+          cout<<"-/-";
+        } else if(board[i][j]==LEFTBAFFLE) {
+          cout<<"-\\-";
+        } else if(board[i][j]==RIGHTBAFFLE) {
+         cout<<"-/-";
+       }
+      cout<<j+i<<endl;
+     }
+  cout<<" ";
+  }
+  for(int i = 0; i<MAXCOLUMN; i++){
+    cout<<39-i<<" ";
+  }
+  cout<<endl; //nestewd for loop to print the board
+  }
+}
+void PrintScore(int numLaserShot, int numGuess)
+//displays score infromation in a nice format
+{
+  cout<< "Number of shots: " << numLaserShot << endl;
+  
+  cout<< "Number of guesses: " << numGuess << endl;
+  
+  cout<< "Current score: " << score << endl;
+}
+void SetBoard(Grid board[][MAXCOLUMN], Level gameLevel)
+{
+  for(int i = 0; i<MAXROW; i++){
+    for(int j = 0;j<MAXCOLUMN; j++){
+      board[i][j] = EMPTY;
+    }
+  }
+  //baffles according to level
+  for(int i = 0; i<int(gameLevel); i++){
+    int randX;
+    int randY;
+    do{
+     randX = rand()% MAXCOLUMN; //WAS 10
+     randY = rand()%MAXCOLUMN; //WAS 10
+    Grid randBaff = Grid(rand()%2);
+    board[randX][randY] = randBaff;
+    } while (board[randX][randY] != EMPTY);
+
+    Grid randBaff = Grid(rand()%2);
+    board[randX][randY] = LEFTBAFFLE;
+    board[randY][randX+1] = RIGHTBAFFLE;
+  }
+}
+void TrackLaser(Grid board[][MAXCOLUMN], int laserX, int laserY, Direction dir, int& exitX, int &exitY)
+{
+    if (laserX < 0 || laserX >= MAXROW || laserY < 0|| laserY >= MAXCOLUMN){
+  exitX = laserX;
+  exitY = laserY;
+  return;
+}
+//laser halt
+  if (board[laserX][laserY] == '/') {
+    if (dir == UP) {
+      dir = Direction::LEFT;
+    } else if (dir == DOWN) {
+      dir = Direction::RIGHT;
+    } else if (dir == LEFT) {
+      dir = Direction::UP;
+     } else if (dir == RIGHT) {
+      dir = Direction::DOWN;
+     }
+    } else if (board[laserX][laserY] == '\\') {
+    if (dir == UP) {
+      dir = Direction::RIGHT;
+    } else if (dir == DOWN) {
+      dir = Direction::LEFT;
+    } else if (dir == LEFT) {
+      dir = Direction::DOWN;
+     } else if (dir == RIGHT) {
+      dir = Direction::UP;
+    }
+  }
+//cur loc
+  if (dir == UP) {
+    laserX--;
+  }else if (dir == DOWN) {
+    laserX++; 
+    } else if (dir == LEFT){
+      laserY--;
+    } else if (dir == RIGHT) {
+      laserY++;
+    } 
+  //recursive tracking
+  TrackLaser(board, laserX, laserY, dir, exitX, exitY);
+  } 
+bool MakeGuess(Grid board[][MAXCOLUMN], int& guessR, int& guessC, int row, int col)
+{
+int laserX = guessR * 2 + 1;
+int laserY = guessC * 4 + 2;
+    
+  if (board[laserX][laserY] == 'R' || board[laserX][laserY] == 'L') {
+      //update board to mark the baffle as found
+      board[row][col] = 'X';
+      board[row-1][col-1] = '/';
+      board[row-1][col+1] = '\\';
+      board[row+1][col-1] = '\\';
+      board[row+1][col+1] = '/';
+      return true;
+  } else {
+      return false;
+        }
+   
+ }
+void commandLet (char command)
+{
+  switch (command) {
+   case 'L': // Fire laser
+      int loc;
+      cout << "Enter location to shoot from (0-39): ";
+      cin >> loc;
+      int exitPoint = TrackLaser(board, loc / 5, loc % 5, RIGHT);
+     cout << "Laser Shot #" << shots << " exited the box at " << exitPoint << "." << endl;
+     shot++;
+     score -= 5;
+     break;
+    
+  case 'G': // Make guess
+   numGuess++;
+    int row, col;
+    int dir;
+    cout << "Enter row, column, and direction (L or R) of baffle: ";
+    cin >> row >> col >> dir;
+    bool success = MakeGuess(board, row, col, &numGuess, &foundOnly, &score);
+    numGuess++;
+    if (success) {
+    if (foundOnly[row][col] == dir) {
+    cout << "You have already found this baffle." << endl;
+    } else {
+    foundOnly[row][col] = dir;
+    cout << "Congratulations, you have now found " << gameLevel(foundOnly) << " baffles." << endl;
+    score += 10;
+    }
+    } else {
+     cout << "Sorry, better luck next time." << endl;
+     score -= 1;
+     }
+     break;
+        
+    case 'S': // Print current score
+      PrintScore(numLaserShot, numGuess, score);
+        break;
+        
+     case 'P': // Print game board
+      PrintBoard(board, foundOnly);
+         break;
+    
+      case 'Q': // Quit game
+        cout << "Quitting game." << endl;
+          break;
+      
+      case 'C': // Print game board with all baffles revealed
+        cout << "Printing box." << endl;
+        PrintBoard(board, false);
+        break;
+    
+        default:
+         // Invalid command
+        cout << "Invalid command." << endl; 
+     } 
+    } while (command != 'Q'); 
+  }
+}
+
