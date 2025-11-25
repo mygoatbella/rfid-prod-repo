@@ -24,12 +24,13 @@ router.post('/scan', auth, async (req, res) => {
 
 // GET /api/tags/:tag/history?limit=100
 router.get('/tags/:tag/history', async (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit||100), 1000);
-  const scans = await Scan.find({ tag: req.params.tag }).sort({ ts: -1 }).limit(limit).exec();
-  res.json(scans);
-});
-// GET /api/stats/top?days=7&limit=50
-router.get('/stats/top', async (req, res) => {
+    const limit = Math.min(parseInt(req.query.limit||100), 1000);
+    const scans = await Scan.find({ tag: req.params.tag }).sort({ ts: -1 }).limit(limit).exec();
+    res.json(scans);
+  });
+  
+  // GET /api/stats/top?days=7&limit=50
+  router.get('/stats/top', async (req, res) => {
     const days = parseInt(req.query.days || 7);
     const limit = Math.min(parseInt(req.query.limit || 50), 500);
     const since = new Date(Date.now() - days*24*60*60*1000);
@@ -40,7 +41,6 @@ router.get('/stats/top', async (req, res) => {
       { $limit: limit }
     ]);
     res.json(agg);
-  });
-  
-  module.exports = router;
-  
+});
+
+module.exports = router;
