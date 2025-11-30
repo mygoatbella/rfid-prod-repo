@@ -1,10 +1,12 @@
 # RFID API (Express + Mongo) + ESP32 client
 
-## Quick start (Docker)
-1. Copy .env.example -> api/.env (or rely on compose env)
-2. Edit API_KEY in docker-compose.yml to a secret.
-3. Start:
-   docker-compose up --build
+## How to Run (Arduino Uno + Python Bridge)
+1. Upload the code in `arduino_scanner.ino` to the Arduino Uno.
+2. Connect the Arduino to the laptop via USB.
+3. Update the COM port in `bridge/bridge.py`.
+4. Run the bridge:
+   cd bridge
+   python bridge.py
 
 API will be at http://localhost:3000
 
@@ -18,10 +20,6 @@ curl http://localhost:3000/api/tags/ABC123/history
 Top:
 curl http://localhost:3000/api/stats/top?days=7&limit=10
 
-## ESP32
-- Edit `esp32/esp32_rfid_client.ino` with your WiFi and server IP.
-- Upload to ESP32. Connect ID12LA TX -> RX1 pin (configured as RX_PIN=16 above).
-- Set API key header to match server.
 
 ## Notes
 - Use HTTPS + proper auth in production.
