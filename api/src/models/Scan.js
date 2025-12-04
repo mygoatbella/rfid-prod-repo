@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
 
-const ScanSchema = new mongoose.Schema({
-  tag: { type: String, required: true, index: true },
-  deviceId: String,
-  readerId: String,
-  metadata: mongoose.Schema.Types.Mixed,
-  ts: { type: Date, default: Date.now, index: true }
+const TagStatsSchema = new mongoose.Schema({
+  tag: { type: String, unique: true, index: true },
+  total: { type: Number, default: 0 },
+  lastSeen: { type: Date }
 });
 
-module.exports = mongoose.model('Scan', ScanSchema);
+// The fix is in this line:
+module.exports = mongoose.models.TagStats || mongoose.model('TagStats', TagStatsSchema);
