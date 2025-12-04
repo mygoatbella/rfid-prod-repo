@@ -3,169 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFID Command Center</title>
+    <title>RFID Scan Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --text-main: #c9d1d9;
-            --accent: #58a6ff;
-            --border: #30363d;
-            --success: #238636;
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* Soft cloud white */
+            --bg-gradient-color: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%); /* Pastel Purple/Blue */
+            --card-bg: #ffffff;
+            --text-main: #5b5b5b;
+            --accent: #9b72cf; /* Cute Purple */
+            --accent-hover: #b48ded;
+            --shadow: 0 10px 25px rgba(112, 128, 175, 0.15);
+            --radius: 20px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Quicksand', sans-serif; /* The cute font */
+            background-image: var(--bg-gradient-color);
             color: var(--text-main);
+            min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
         }
 
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* HEADER SECTION */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         h1 {
-            color: var(--accent);
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 700;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            background-color: var(--success);
-            color: white;
-            font-size: 0.85em;
-            font-weight: bold;
-            margin-bottom: 20px;
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-top: 5px;
         }
 
         /* CARD STYLES */
         .card {
             background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border: none;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            color: var(--accent);
+            margin-top: 0;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         /* TABLE STYLES */
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0 10px; /* Space between rows */
             margin-top: 10px;
         }
 
-        th, td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
         th {
-            color: var(--accent);
-            font-size: 0.9em;
+            text-align: left;
+            padding: 15px;
+            color: #8898aa;
+            font-size: 0.85em;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 700;
         }
 
-        tr:hover {
-            background-color: rgba(88, 166, 255, 0.1);
+        td {
+            padding: 15px;
+            background: #f8f9fe;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
+        /* Rounded corners for table rows */
+        tr td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; border-left: 1px solid #f0f0f0;}
+        tr td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-right: 1px solid #f0f0f0;}
+
+        /* STATUS BADGE */
+        .tag-badge {
+            background-color: #e0f7fa;
+            color: #006064;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* BUTTONS */
         .refresh-btn {
-            background-color: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            background-color: white;
+            color: var(--accent);
+            border: 2px solid white;
+            padding: 10px 25px;
+            border-radius: 30px;
             cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: bold;
             font-size: 1em;
-            float: right;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.2s;
         }
         
-        .refresh-btn:hover { opacity: 0.9; }
+        .refresh-btn:hover { 
+            background-color: var(--accent);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* LIVE FEED BOX */
+        .live-box {
+            background: #fff0f6; /* Light pink background */
+            color: #c2185b;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.1em;
+            border: 2px dashed #f8bbd0;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1>RFID Command Center</h1>
-        <button class="refresh-btn" onclick="fetchData()">↻ Refresh Data</button>
-    </div>
-    
-    <span class="status-badge">● System Online</span>
+    <header>
+        <h1>✨ RFID Tracker ✨</h1>
+        <div class="subtitle">Live Campus Feed</div>
+        <br>
+        <button class="refresh-btn" onclick="fetchData()">↻ Refresh</button>
+    </header>
 
     <div class="card">
-        <h2>🏆 Top Scans (Leaderboard)</h2>
+        <h2>💖 Just Spotted</h2>
+        <div id="last-scan-info" class="live-box">
+            Waiting for cute tags...
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>⭐ Top Visitors</h2>
         <table id="leaderboard">
             <thead>
                 <tr>
                     <th>Tag ID</th>
-                    <th>Total Scans</th>
+                    <th>Visits</th>
                     <th>Last Seen</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td colspan="3">Loading data from Render...</td></tr>
+                <tr><td colspan="3" style="text-align:center">Loading sparkles... ✨</td></tr>
             </tbody>
         </table>
-    </div>
-
-    <div class="card">
-        <h2>⏱ Live Feed (Last Scan)</h2>
-        <div id="last-scan-info">
-            Waiting for updates...
-        </div>
     </div>
 </div>
 
 <script>
-    // REPLACE THIS URL WITH YOUR RENDER URL!
+    // REPLACE THIS WITH YOUR RENDER URL
     const API_URL = "https://rfid-api-epu4.onrender.com/api";
 
     async function fetchData() {
         try {
-            // 1. Fetch Top Stats
             const response = await fetch(`${API_URL}/stats/top`);
             const data = await response.json();
             
-            // 2. Build the Table
             const tbody = document.querySelector("#leaderboard tbody");
-            tbody.innerHTML = ""; // Clear "Loading..." text
+            tbody.innerHTML = ""; 
 
             data.forEach(item => {
                 const row = `
                     <tr>
-                        <td style="font-family: monospace; font-size: 1.1em;">${item.tag}</td>
-                        <td>${item.total}</td>
-                        <td>${new Date(item.lastSeen).toLocaleString()}</td>
+                        <td><span class="tag-badge">🏷️ ${item.tag}</span></td>
+                        <td style="font-weight:bold; color: #9b72cf;">${item.total}</td>
+                        <td style="color: #8898aa;">${new Date(item.lastSeen).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
 
-            // 3. Update "Live Feed" with the #1 result
             if(data.length > 0) {
                 const top = data[0];
                 document.getElementById('last-scan-info').innerHTML = 
-                    `Last active tag: <strong>${top.tag}</strong> at ${new Date(top.lastSeen).toLocaleTimeString()}`;
+                    `The most popular tag is <strong>${top.tag}</strong>! Seen at ${new Date(top.lastSeen).toLocaleTimeString()}`;
             }
 
         } catch (error) {
             console.error("Error:", error);
             document.querySelector("#leaderboard tbody").innerHTML = 
-                `<tr><td colspan="3" style="color: red;">Error connecting to API. Check console.</td></tr>`;
+                `<tr><td colspan="3" style="color: hotpink; text-align:center;">Oops! API is sleeping. 💤</td></tr>`;
         }
     }
 
-    // Load data immediately when page opens
     fetchData();
 </script>
 
