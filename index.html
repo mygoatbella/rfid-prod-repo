@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Command Center</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-main: #c9d1d9;
+            --accent: #58a6ff;
+            --border: #30363d;
+            --success: #238636;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background-color: var(--success);
+            color: white;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* CARD STYLES */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        /* TABLE STYLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--accent);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        tr:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+
+        .refresh-btn {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            float: right;
+        }
+        
+        .refresh-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>RFID Command Center</h1>
+        <button class="refresh-btn" onclick="fetchData()">↻ Refresh Data</button>
+    </div>
+    
+    <span class="status-badge">● System Online</span>
+
+    <div class="card">
+        <h2>🏆 Top Scans (Leaderboard)</h2>
+        <table id="leaderboard">
+            <thead>
+                <tr>
+                    <th>Tag ID</th>
+                    <th>Total Scans</th>
+                    <th>Last Seen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="3">Loading data from Render...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>⏱ Live Feed (Last Scan)</h2>
+        <div id="last-scan-info">
+            Waiting for updates...
+        </div>
+    </div>
+</div>
+
+<script>
+    // REPLACE THIS URL WITH YOUR RENDER URL!
+    const API_URL = "https://rfid-api-epu4.onrender.com/api";
+
+    async function fetchData() {
+        try {
+            // 1. Fetch Top Stats
+            const response = await fetch(`${API_URL}/stats/top`);
+            const data = await response.json();
+            
+            // 2. Build the Table
+            const tbody = document.querySelector("#leaderboard tbody");
+            tbody.innerHTML = ""; // Clear "Loading..." text
+
+            data.forEach(item => {
+                const row = `
+                    <tr>
+                        <td style="font-family: monospace; font-size: 1.1em;">${item.tag}</td>
+                        <td>${item.total}</td>
+                        <td>${new Date(item.lastSeen).toLocaleString()}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            // 3. Update "Live Feed" with the #1 result
+            if(data.length > 0) {
+                const top = data[0];
+                document.getElementById('last-scan-info').innerHTML = 
+                    `Last active tag: <strong>${top.tag}</strong> at ${new Date(top.lastSeen).toLocaleTimeString()}`;
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            document.querySelector("#leaderboard tbody").innerHTML = 
+                `<tr><td colspan="3" style="color: red;">Error connecting to API. Check console.</td></tr>`;
+        }
+    }
+
+    // Load data immediately when page opens
+    fetchData();
+</script>
+
+</body>
+</html>
